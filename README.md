@@ -2,6 +2,9 @@
 
 # Readme
 
+## Creating a server
+1. https://ktor.io/docs/engines.html#choose-create-server
+
 ## Deploying 
 
 [Ktor gradle plugin](https://github.com/ktorio/ktor-build-plugins)
