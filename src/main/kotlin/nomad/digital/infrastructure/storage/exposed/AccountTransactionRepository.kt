@@ -1,6 +1,5 @@
 package nomad.digital.infrastructure.storage.exposed
 
-import kotlinx.datetime.toKotlinLocalDate
 import nomad.digital.domain.AccountTransaction
 import nomad.digital.infrastructure.storage.exposed.config.DatabaseFactory.dbQuery
 import nomad.digital.infrastructure.storage.exposed.entity.AccountEntity

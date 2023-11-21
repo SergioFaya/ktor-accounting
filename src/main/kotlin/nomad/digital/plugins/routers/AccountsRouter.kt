@@ -19,6 +19,7 @@ import nomad.digital.domain.Account
 import nomad.digital.infrastructure.readBankTransactions
 import nomad.digital.infrastructure.storage.exposed.addAccount
 import nomad.digital.infrastructure.storage.exposed.deleteAccount
+import nomad.digital.infrastructure.storage.exposed.entity.AccountTransactionEntity
 import nomad.digital.infrastructure.storage.exposed.findAccount
 import nomad.digital.infrastructure.storage.exposed.findAccounts
 
@@ -36,10 +37,24 @@ class AccountResource {
 
     @Resource("{id}/transactions")
     class UploadTransactions(val parent: AccountResource = AccountResource(), val id: Long)
+
+}
+
+@Resource("/transactions")
+class TransactionsResource {
+
+    @Resource("{id}/delete")
+    class DeleteById(val parent: TransactionsResource = TransactionsResource(), val id: Long)
 }
 
 
 fun Route.accountsRouter() {
+    get<TransactionsResource.DeleteById> { deleteById ->
+
+        val id = deleteById.id
+
+        call.respondRedirect("/accounts")
+    }
 
     get<AccountResource> {
         val accounts = runBlocking {

@@ -11,6 +11,7 @@ import kotlinx.html.link
 import kotlinx.html.meta
 import kotlinx.html.nav
 import kotlinx.html.script
+import kotlinx.html.style
 import kotlinx.html.title
 
 fun HTML.baseTemplate(content: DIV.() -> Unit = {}) {
@@ -35,7 +36,8 @@ fun HTML.baseTemplate(content: DIV.() -> Unit = {}) {
             }
         }
 
-        div(classes = "container mt-4") {
+        div(classes = "container pt-4 px-4") {
+            style = "max-width: 1600px;"
             content()
         }
 

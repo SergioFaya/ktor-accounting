@@ -9,14 +9,19 @@ import kotlinx.html.InputType
 import kotlinx.html.ThScope
 import kotlinx.html.a
 import kotlinx.html.button
+import kotlinx.html.code
 import kotlinx.html.div
 import kotlinx.html.form
 import kotlinx.html.h1
+import kotlinx.html.h2
+import kotlinx.html.i
 import kotlinx.html.id
+import kotlinx.html.img
 import kotlinx.html.input
 import kotlinx.html.label
 import kotlinx.html.li
 import kotlinx.html.p
+import kotlinx.html.strong
 import kotlinx.html.style
 import kotlinx.html.tabIndex
 import kotlinx.html.table
@@ -27,6 +32,7 @@ import kotlinx.html.thead
 import kotlinx.html.tr
 import kotlinx.html.ul
 import nomad.digital.domain.Account
+import java.math.BigDecimal
 
 private fun HTML.accountPageBase(title: String = "", actions: DIV.() -> Unit = {}, mainContent: DIV.() -> Unit = {}) =
     baseTemplate {
@@ -40,8 +46,8 @@ private fun HTML.accountPageBase(title: String = "", actions: DIV.() -> Unit = {
                 mainContent()
             }
             div(classes = "col-3") {
+
                 div("card bg-warning text-dark bg-opacity-25") {
-                    style = "width: 18rem;"
                     div("card-header") { +"Summary" }
                     div(classes = "card-body") {
                         p { +"Total Savings" }
@@ -123,37 +129,69 @@ internal fun HTML.listAccount(account: Account) =
             }
         }
 
-        table(classes = "table") {
-            thead {
-                tr(classes = "table-dark") {
-                    th(scope = ThScope.col) {
-                        +"Name"
-                    }
-                    th(scope = ThScope.col) {
-                        +"Date"
-                    }
-                    th(scope = ThScope.col) {
-                        +"Amount"
-                    }
-                    th(scope = ThScope.col) {
-                        +"Category"
-                    }
-                }
-            }
-            tbody {
-                account.accountTransactions.forEach {
-                    tr {
-                        th(scope = ThScope.row) {
-                            +it.concept
+
+        div("accordion") {
+            id = "accordionPanelsStayOpenExample"
+
+            val accountsTransactions = account.accountTransactions.groupBy { "${it.date.month}-${it.date.year}" }
+
+            accountsTransactions.forEach {
+                div("accordion-item") {
+                    h2("accordion-header") {
+                        button(classes = "accordion-button") {
+                            type = ButtonType.button
+                            attributes["data-bs-toggle"] = "collapse"
+                            attributes["data-bs-target"] = "#${it.key}"
+                            attributes["aria-expanded"] = "false"
+                            attributes["aria-controls"] = it.key
+                            +"${it.key} - Balance: ${it.value.fold(BigDecimal(0)) { acc, value -> acc + value.amount }}"
                         }
-                        td {
-                            +"${it.date}"
-                        }
-                        td {
-                            +"${it.amount}"
-                        }
-                        td {
-                            +"${it.category}"
+                    }
+                    div("accordion-collapse collapse show") {
+                        id = it.key
+                        div("accordion-body") {
+                            table(classes = "table") {
+                                thead {
+                                    tr(classes = "table-dark") {
+                                        th(scope = ThScope.col) {
+                                            +"Name"
+                                        }
+                                        th(scope = ThScope.col) {
+                                            +"Date"
+                                        }
+                                        th(scope = ThScope.col) {
+                                            +"Amount"
+                                        }
+                                        th(scope = ThScope.col) {
+                                            +"Category"
+                                        }
+                                        th(scope = ThScope.col) {
+                                            +"Actions"
+                                        }
+                                    }
+                                }
+                                tbody {
+                                    it.value.forEach {
+                                        tr {
+                                            th(scope = ThScope.row) {
+                                                +it.concept
+                                            }
+                                            td {
+                                                +"${it.date}"
+                                            }
+                                            td {
+                                                +"${it.amount}"
+                                            }
+                                            td {
+                                                +"${it.category}"
+                                            }
+                                            td {
+                                                +"Delete TODO"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -234,7 +272,9 @@ internal fun HTML.listAccounts(accounts: List<Account>) =
                         div {
                             a(link) { +"Account ${it.accountName}" }
                             +"|"
-                            a("$link/delete") { +"Delete ${it.accountName}" }
+                            a("$link/delete") {
+                                +"Delete ${it.accountName}"
+                            }
                         }
                     }
                 }
