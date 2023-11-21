@@ -1,30 +1,29 @@
 package nomad.digital.domain
 
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
-import nomad.digital.domain.TransactionCategory.OTHER
 import java.math.BigDecimal
-import java.time.LocalDate
 
 @Serializable
 data class Account(
-    val id: Long,
-    val title: String,
-    val transactions: List<Transaction> = emptyList()
+    val id: Long? = null,
+    val accountName: String,
+    val accountTransactions: List<AccountTransaction> = emptyList()
 )
 
 @Serializable
-data class Transaction(
-    val id: Long,
-    val name: String,
+data class AccountTransaction(
+    val id: Long? = null,
+    val concept: String,
     @Contextual
     val date: LocalDate,
     @Contextual
     val amount: BigDecimal,
-    val category: TransactionCategory = OTHER
+    val category: TransactionCategory = TransactionCategory.UNSET
 )
 
 @Serializable
 enum class TransactionCategory {
-    SAVING, FOOD, PARTY, OTHER
+    SAVING, FOOD, PARTY, OTHER, UNSET
 }

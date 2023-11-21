@@ -11,11 +11,11 @@ class AccountEntity(id: EntityID<Long>) : LongEntity(id) {
     companion object : LongEntityClass<AccountEntity>(AccountTable)
 
     var title by AccountTable.title
-    val transactions by TransactionEntity referrersOn TransactionTable.account
+    val transactions by AccountTransactionEntity referrersOn TransactionTable.account
 }
 
 fun AccountEntity.toAccount() = Account(
     id = id.value,
-    title = title,
-    transactions = transactions.map(TransactionEntity::toTransaction)
+    accountName = title,
+    accountTransactions = transactions.map(AccountTransactionEntity::toTransaction)
 )

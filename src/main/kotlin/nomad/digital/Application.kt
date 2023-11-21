@@ -1,11 +1,15 @@
 package nomad.digital
 
-import io.ktor.server.application.*
-import io.ktor.server.config.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.ktor.server.application.Application
+import io.ktor.server.config.HoconConfigLoader
+import io.ktor.server.engine.applicationEngineEnvironment
+import io.ktor.server.engine.connector
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 import nomad.digital.infrastructure.storage.exposed.config.DatabaseFactory
-import nomad.digital.plugins.*
+import nomad.digital.plugins.configurePostgres
+import nomad.digital.plugins.configureRouting
+import nomad.digital.plugins.configureSerialization
 
 fun main(args: Array<String>) {
     HoconConfigLoader()
@@ -21,7 +25,6 @@ fun main(args: Array<String>) {
 
 fun Application.module() {
     DatabaseFactory.init()
-    configureTemplating()
     configureSerialization()
     configureRouting()
     configurePostgres()
