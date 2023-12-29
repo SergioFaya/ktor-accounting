@@ -40,8 +40,6 @@ dependencies {
 
     implementation("com.h2database:h2:1.0.60")
 
-
-
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-html-builder-jvm")
     implementation("io.ktor:ktor-server-host-common-jvm")
@@ -68,7 +66,6 @@ dependencies {
 
     testImplementation("org.assertj:assertj-core:3.11.1")
     testImplementation("io.mockk:mockk:1.13.7")
-
 }
 
 tasks.test {
@@ -91,17 +88,19 @@ ktor {
         portMappings.set(
             listOf(
                 io.ktor.plugin.features.DockerPortMapping(
-                    80, 8080, io.ktor.plugin.features.DockerPortMappingProtocol.TCP
-                )
-            )
+                    80,
+                    8080,
+                    io.ktor.plugin.features.DockerPortMappingProtocol.TCP,
+                ),
+            ),
         )
 
         externalRegistry.set(
             io.ktor.plugin.features.DockerImageRegistry.dockerHub(
                 appName = provider { "ktor-app" },
                 username = providers.environmentVariable("DOCKER_HUB_USERNAME"),
-                password = providers.environmentVariable("DOCKER_HUB_PASSWORD")
-            )
+                password = providers.environmentVariable("DOCKER_HUB_PASSWORD"),
+            ),
         )
     }
 }

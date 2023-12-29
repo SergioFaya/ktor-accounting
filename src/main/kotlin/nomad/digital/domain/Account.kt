@@ -9,7 +9,7 @@ import java.math.BigDecimal
 data class Account(
     val id: Long? = null,
     val accountName: String,
-    val accountTransactions: List<AccountTransaction> = emptyList()
+    val accountTransactions: List<AccountTransaction> = emptyList(),
 )
 
 @Serializable
@@ -20,10 +20,14 @@ data class AccountTransaction(
     val date: LocalDate,
     @Contextual
     val amount: BigDecimal,
-    val category: TransactionCategory = TransactionCategory.UNSET
+    val category: TransactionCategory = TransactionCategory.UNSET,
 )
 
 @Serializable
 enum class TransactionCategory {
-    SAVING, FOOD, PARTY, OTHER, UNSET
+    SAVING,
+    FOOD,
+    PARTY,
+    OTHER,
+    UNSET,
 }

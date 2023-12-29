@@ -9,7 +9,6 @@ import kotlinx.html.h1
 import kotlinx.html.img
 import kotlinx.html.role
 
-
 suspend fun ApplicationCall.defaultErrorResponse(message: String) =
 
     respondHtml {

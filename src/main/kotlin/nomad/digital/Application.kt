@@ -13,13 +13,14 @@ import nomad.digital.plugins.configureSerialization
 
 fun main(args: Array<String>) {
     HoconConfigLoader()
-    val env = applicationEngineEnvironment {
-        module(Application::module)
-        connector {
-            host = "0.0.0.0"
-            port = 8080
+    val env =
+        applicationEngineEnvironment {
+            module(Application::module)
+            connector {
+                host = "0.0.0.0"
+                port = 8080
+            }
         }
-    }
     embeddedServer(Netty, env).start(true)
 }
 

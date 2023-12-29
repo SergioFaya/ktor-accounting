@@ -14,8 +14,9 @@ class AccountEntity(id: EntityID<Long>) : LongEntity(id) {
     val transactions by AccountTransactionEntity referrersOn TransactionTable.account
 }
 
-fun AccountEntity.toAccount() = Account(
-    id = id.value,
-    accountName = title,
-    accountTransactions = transactions.map(AccountTransactionEntity::toTransaction)
-)
+fun AccountEntity.toAccount() =
+    Account(
+        id = id.value,
+        accountName = title,
+        accountTransactions = transactions.map(AccountTransactionEntity::toTransaction),
+    )

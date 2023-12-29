@@ -23,7 +23,7 @@ import nomad.digital.plugins.routers.defaultErrorResponse
 
 fun Application.configureRouting() {
     install(Webjars) {
-        path = "/assets" //defaults to /webjars
+        path = "/assets" // defaults to /webjars
     }
     install(Resources)
     install(ContentNegotiation) {
@@ -31,7 +31,7 @@ fun Application.configureRouting() {
             Json {
                 prettyPrint = true
                 isLenient = true
-            }
+            },
         )
     }
     install(StatusPages) {
@@ -42,14 +42,13 @@ fun Application.configureRouting() {
         unhandled { call ->
             call.defaultErrorResponse(
                 "Unhandled: ${call.request.uri} ${call.request.httpMethod} " +
-                        "- Params: ${call.parameters}"
+                    "- Params: ${call.parameters}",
             )
         }
 
         status(HttpStatusCode.NotFound, HttpStatusCode.UnsupportedMediaType) { call, status ->
             call.defaultErrorResponse("Status: $status - Params:  ${call.parameters}")
         }
-
     }
     routing {
         staticResourceRouter()

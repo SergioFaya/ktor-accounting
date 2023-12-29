@@ -19,13 +19,11 @@ import nomad.digital.domain.Account
 import nomad.digital.infrastructure.readBankTransactions
 import nomad.digital.infrastructure.storage.exposed.addAccount
 import nomad.digital.infrastructure.storage.exposed.deleteAccount
-import nomad.digital.infrastructure.storage.exposed.entity.AccountTransactionEntity
 import nomad.digital.infrastructure.storage.exposed.findAccount
 import nomad.digital.infrastructure.storage.exposed.findAccounts
 
 @Resource("/accounts")
 class AccountResource {
-
     @Resource("new")
     class New(val parent: AccountResource = AccountResource())
 
@@ -37,16 +35,13 @@ class AccountResource {
 
     @Resource("{id}/transactions")
     class UploadTransactions(val parent: AccountResource = AccountResource(), val id: Long)
-
 }
 
 @Resource("/transactions")
 class TransactionsResource {
-
     @Resource("{id}/delete")
     class DeleteById(val parent: TransactionsResource = TransactionsResource(), val id: Long)
 }
-
 
 fun Route.accountsRouter() {
     get<TransactionsResource.DeleteById> { deleteById ->
@@ -57,9 +52,10 @@ fun Route.accountsRouter() {
     }
 
     get<AccountResource> {
-        val accounts = runBlocking {
-            findAccounts()
-        }
+        val accounts =
+            runBlocking {
+                findAccounts()
+            }
         call.respondHtml {
             listAccounts(accounts)
         }
@@ -105,14 +101,15 @@ fun Route.accountsRouter() {
         call.receiveMultipart().forEachPart { part ->
             when (part) {
                 is PartData.FormItem -> {}
-                is PartData.FileItem -> { part.streamProvider().readBankTransactions(accountId) }
+                is PartData.FileItem -> {
+                    part.streamProvider().readBankTransactions(accountId)
+                }
                 else -> {}
             }
             part.dispose()
         }
 
         call.respondRedirect("/accounts/$accountId")
-
     }
 
     get<AccountResource.DeleteById> { deleteById ->
@@ -120,7 +117,4 @@ fun Route.accountsRouter() {
 
         call.respondRedirect("/accounts", permanent = true)
     }
-
-
 }
-

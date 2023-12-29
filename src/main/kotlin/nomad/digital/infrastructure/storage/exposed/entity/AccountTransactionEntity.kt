@@ -18,10 +18,11 @@ class AccountTransactionEntity(id: EntityID<Long>) : LongEntity(id) {
     var account by AccountEntity referencedOn TransactionTable.account
 }
 
-fun AccountTransactionEntity.toTransaction() = AccountTransaction(
-    id = id.value,
-    concept = name,
-    date = date,
-    amount = amount,
-    category = TransactionCategory.valueOf(category)
-)
+fun AccountTransactionEntity.toTransaction() =
+    AccountTransaction(
+        id = id.value,
+        concept = name,
+        date = date,
+        amount = amount,
+        category = TransactionCategory.valueOf(category),
+    )

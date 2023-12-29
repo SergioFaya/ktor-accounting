@@ -1,12 +1,10 @@
 package nomad.digital.infrastructure
 
-import net.bytebuddy.asm.Advice.Local
 import org.junit.jupiter.api.DynamicTest.dynamicTest
 import org.junit.jupiter.api.TestFactory
 import java.math.BigDecimal
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
-import java.util.Locale
 
 class ImporterKtTest {
     @TestFactory
@@ -20,8 +18,6 @@ class ImporterKtTest {
             "-0,10",
         ).map {
             dynamicTest("Test number formatting for value $it") {
-
-
                 val symbols = DecimalFormatSymbols()
                 symbols.groupingSeparator = '.'
                 symbols.decimalSeparator = ','
@@ -29,12 +25,7 @@ class ImporterKtTest {
                 val decimalFormat = DecimalFormat(pattern, symbols)
                 decimalFormat.isParseBigDecimal = true
 
-
-
                 decimalFormat.parse(it) as BigDecimal
-
             }
         }
-
-
 }

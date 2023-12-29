@@ -1,6 +1,5 @@
 package nomad.digital.plugins.routers
 
-import javax.management.Query.div
 import kotlinx.html.DIV
 import kotlinx.html.HTML
 import kotlinx.html.a
@@ -13,6 +12,7 @@ import kotlinx.html.nav
 import kotlinx.html.script
 import kotlinx.html.style
 import kotlinx.html.title
+import javax.management.Query.div
 
 fun HTML.baseTemplate(content: DIV.() -> Unit = {}) {
     head {
@@ -25,7 +25,6 @@ fun HTML.baseTemplate(content: DIV.() -> Unit = {}) {
         title { +"Bootstrap demo" }
     }
     body {
-
         nav("navbar bg-dark border-bottom border-body") {
             attributes["data-bs-theme"] = "dark"
 

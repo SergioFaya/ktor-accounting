@@ -5,8 +5,10 @@ import nomad.digital.infrastructure.storage.exposed.config.DatabaseFactory.dbQue
 import nomad.digital.infrastructure.storage.exposed.entity.AccountEntity
 import nomad.digital.infrastructure.storage.exposed.entity.AccountTransactionEntity
 
-
-suspend fun batchInsertAccountTransactions(accountId: Long, accountTransactions: List<AccountTransaction>) = dbQuery {
+suspend fun batchInsertAccountTransactions(
+    accountId: Long,
+    accountTransactions: List<AccountTransaction>,
+) = dbQuery {
     accountTransactions.forEach {
         AccountTransactionEntity.new {
             name = it.concept

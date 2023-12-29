@@ -9,20 +9,15 @@ import kotlinx.html.InputType
 import kotlinx.html.ThScope
 import kotlinx.html.a
 import kotlinx.html.button
-import kotlinx.html.code
 import kotlinx.html.div
 import kotlinx.html.form
 import kotlinx.html.h1
 import kotlinx.html.h2
-import kotlinx.html.i
 import kotlinx.html.id
-import kotlinx.html.img
 import kotlinx.html.input
 import kotlinx.html.label
 import kotlinx.html.li
 import kotlinx.html.p
-import kotlinx.html.strong
-import kotlinx.html.style
 import kotlinx.html.tabIndex
 import kotlinx.html.table
 import kotlinx.html.tbody
@@ -34,35 +29,36 @@ import kotlinx.html.ul
 import nomad.digital.domain.Account
 import java.math.BigDecimal
 
-private fun HTML.accountPageBase(title: String = "", actions: DIV.() -> Unit = {}, mainContent: DIV.() -> Unit = {}) =
-    baseTemplate {
-        div(classes = "row") {
-            div(classes = "col-12") {
-                h1 { +title }
-            }
+private fun HTML.accountPageBase(
+    title: String = "",
+    actions: DIV.() -> Unit = {},
+    mainContent: DIV.() -> Unit = {},
+) = baseTemplate {
+    div(classes = "row") {
+        div(classes = "col-12") {
+            h1 { +title }
         }
-        div(classes = "row") {
-            div(classes = "col-9") {
-                mainContent()
-            }
-            div(classes = "col-3") {
+    }
+    div(classes = "row") {
+        div(classes = "col-9") {
+            mainContent()
+        }
+        div(classes = "col-3") {
+            div("card bg-warning text-dark bg-opacity-25") {
+                div("card-header") { +"Summary" }
+                div(classes = "card-body") {
+                    p { +"Total Savings" }
+                    p { +"Total Investment" }
 
-                div("card bg-warning text-dark bg-opacity-25") {
-                    div("card-header") { +"Summary" }
-                    div(classes = "card-body") {
-                        p { +"Total Savings" }
-                        p { +"Total Investment" }
-
-                        p { +"TODO: add savings performance" }
-                    }
-                    div("card-footer d-grid gap-2") {
-                        actions()
-                    }
+                    p { +"TODO: add savings performance" }
+                }
+                div("card-footer d-grid gap-2") {
+                    actions()
                 }
             }
         }
     }
-
+}
 
 internal fun HTML.listAccount(account: Account) =
     accountPageBase("Account information: ${account.accountName}", actions = {
@@ -72,7 +68,6 @@ internal fun HTML.listAccount(account: Account) =
             attributes["data-bs-target"] = "#newTransactionModal"
             +"Add Transactions"
         }
-
     }) {
         div("modal fade") {
             id = "newTransactionModal"
@@ -95,11 +90,10 @@ internal fun HTML.listAccount(account: Account) =
                     form(
                         "/accounts/${account.id}/transactions",
                         encType = FormEncType.multipartFormData,
-                        method = FormMethod.post
+                        method = FormMethod.post,
                     ) {
                         id = "transactionFileForm"
                         div("modal-body mb-3") {
-
                             label("form-label") {
                                 htmlFor = "accountName"
                                 +"Account Transactions"
@@ -124,11 +118,9 @@ internal fun HTML.listAccount(account: Account) =
                             }
                         }
                     }
-
                 }
             }
         }
-
 
         div("accordion") {
             id = "accordionPanelsStayOpenExample"
@@ -208,7 +200,6 @@ internal fun HTML.listAccounts(accounts: List<Account>) =
             +"New Account"
         }
     }) {
-
         div("modal fade") {
             id = "newAccountModal"
             tabIndex = "-1"
@@ -230,11 +221,10 @@ internal fun HTML.listAccounts(accounts: List<Account>) =
                     form(
                         "/accounts/new",
                         encType = FormEncType.applicationXWwwFormUrlEncoded,
-                        method = FormMethod.post
+                        method = FormMethod.post,
                     ) {
                         id = "newAccountForm"
                         div("modal-body mb-3") {
-
                             label("form-label") {
                                 htmlFor = "accountName"
                                 +"Account Name"
@@ -259,7 +249,6 @@ internal fun HTML.listAccounts(accounts: List<Account>) =
                             }
                         }
                     }
-
                 }
             }
         }
@@ -281,4 +270,3 @@ internal fun HTML.listAccounts(accounts: List<Account>) =
             }
         }
     }
-

@@ -30,7 +30,6 @@ fun String.parseAsNumber(): BigDecimal {
  * consider deleting while uploading
  */
 
-
 /**
  * F. Operativa,Concepto,F. Valor,Importe,Saldo,Referencia 1,Referencia 2
  * 30/10/2023,COMPRA TARJ LIDL MAD-MERCADO TETU\-MADRID,31/10/2023,"-7,36","4.715,40",,3333_3333
@@ -40,22 +39,22 @@ suspend fun InputStream.readBankTransactions(accountId: Long) {
     val reader = this.bufferedReader()
 
     withContext(Dispatchers.IO) {
+        val transactions: List<AccountTransaction> =
+            reader.readLines().map {
+                val line = it
+                with(line.split('\t')) {
+                    val date = LocalDate.parse(this[0], DateTimeFormatter.ofPattern("dd/MM/yyyy"))
 
-        val transactions: List<AccountTransaction> = reader.readLines().map {
-            val line = it
-            with(line.split('\t')) {
-                val date = LocalDate.parse(this[0], DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                    val amount = this[3].parseAsNumber()
 
-                val amount = this[3].parseAsNumber()
-
-                AccountTransaction(
-                    concept = this[1],
-                    date = date.toKotlinLocalDate(),
-                    amount = amount,
-                    category = TransactionCategory.UNSET,
-                )
+                    AccountTransaction(
+                        concept = this[1],
+                        date = date.toKotlinLocalDate(),
+                        amount = amount,
+                        category = TransactionCategory.UNSET,
+                    )
+                }
             }
-        }
 
         batchInsertAccountTransactions(accountId, transactions)
     }
