@@ -7,6 +7,8 @@ import io.ktor.http.content.streamProvider
 import io.ktor.resources.Resource
 import io.ktor.server.application.call
 import io.ktor.server.html.respondHtml
+import nomad.digital.infrastructure.storage.exposed.deleteTransactions
+
 import io.ktor.server.request.receive
 import io.ktor.server.request.receiveMultipart
 import io.ktor.server.request.receiveParameters
@@ -48,7 +50,9 @@ fun Route.accountsRouter() {
 
         val id = deleteById.id
 
-        call.respondRedirect("/accounts")
+        deleteTransactions(1, listOf(deleteById.id))
+
+        call.respondRedirect("/accounts/1")
     }
 
     get<AccountResource> {

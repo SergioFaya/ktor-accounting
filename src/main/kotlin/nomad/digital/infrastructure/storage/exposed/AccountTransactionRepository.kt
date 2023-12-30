@@ -19,3 +19,14 @@ suspend fun batchInsertAccountTransactions(
         }
     }
 }
+
+suspend fun deleteTransactions(
+    accountId: Long,
+    transactionIds: List<Long>,
+) = dbQuery {
+    // TODO: check account id additionally
+
+    transactionIds.forEach { transactionId ->
+        AccountTransactionEntity[transactionId].delete()
+    }
+}

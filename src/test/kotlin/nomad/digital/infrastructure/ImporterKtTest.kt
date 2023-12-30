@@ -7,6 +7,17 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 
 class ImporterKtTest {
+    /*
+	@Test
+    fun testFileParsing() =
+        runTest {
+            val inputStream: InputStream? = javaClass.classLoader.getResourceAsStream("importer/test.xlsx")
+
+            assertNotNull(inputStream)
+
+            inputStream!!.readBankTransactions(1)
+        }
+     */
     @TestFactory
     fun numberFormattingTest() =
 

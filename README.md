@@ -5,11 +5,11 @@
 ## Creating a server
 1. https://ktor.io/docs/engines.html#choose-create-server
 
-## Deploying 
+## Deploying
 
 [Ktor gradle plugin](https://github.com/ktorio/ktor-build-plugins)
 
-### Packaging 
+### Packaging
 
 * https://ktor.io/docs/deploy.html
 
@@ -20,3 +20,7 @@
 1. `gradle buildImage`
 2. `docker load < build/jib-image.tar`
 3. `docker run -p 8080:80 nomad.digital`
+
+### Packing and running
+1. `gradle installDist`
+2. `.\build\install\ktorAccounting\bin\ktorAccounting`

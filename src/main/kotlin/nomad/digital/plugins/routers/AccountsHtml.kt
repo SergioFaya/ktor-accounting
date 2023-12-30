@@ -178,7 +178,9 @@ internal fun HTML.listAccount(account: Account) =
                                                 +"${it.category}"
                                             }
                                             td {
-                                                +"Delete TODO"
+                                                a("/transactions/${it.id}/delete") {
+                                                    +"Delete x"
+                                                }
                                             }
                                         }
                                     }

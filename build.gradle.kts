@@ -6,6 +6,7 @@ plugins {
     kotlin("jvm") version "1.9.0"
     id("io.ktor.plugin") version "2.3.3"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
+    // TODO: id("org.jlleitschuh.gradle.ktlint") version "7.1.0"
 }
 
 group = "nomad.digital"
@@ -56,9 +57,14 @@ dependencies {
     // status pages for exception handling
     implementation("io.ktor:ktor-server-status-pages:$ktor_version")
 
+    // processing excel
+    implementation("org.apache.poi:poi:5.2.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
+
+    // testing
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
-
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$kotlin_version")
 
     testImplementation(platform("org.junit:junit-bom:5.10.1"))
