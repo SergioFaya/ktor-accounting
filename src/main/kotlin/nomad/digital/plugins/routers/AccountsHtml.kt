@@ -27,6 +27,7 @@ import kotlinx.html.thead
 import kotlinx.html.tr
 import kotlinx.html.ul
 import nomad.digital.domain.Account
+import nomad.digital.domain.TransactionCategory
 import java.math.BigDecimal
 
 private fun HTML.accountPageBase(
@@ -130,7 +131,7 @@ internal fun HTML.listAccount(account: Account) =
             accountsTransactions.forEach {
                 div("accordion-item") {
                     h2("accordion-header") {
-                        button(classes = "accordion-button") {
+                        button(classes = "accordion-button collapsed") {
                             type = ButtonType.button
                             attributes["data-bs-toggle"] = "collapse"
                             attributes["data-bs-target"] = "#${it.key}"
@@ -139,7 +140,7 @@ internal fun HTML.listAccount(account: Account) =
                             +"${it.key} - Balance: ${it.value.fold(BigDecimal(0)) { acc, value -> acc + value.amount }}"
                         }
                     }
-                    div("accordion-collapse collapse show") {
+                    div("accordion-collapse collapse") {
                         id = it.key
                         div("accordion-body") {
                             table(classes = "table") {
@@ -163,22 +164,67 @@ internal fun HTML.listAccount(account: Account) =
                                     }
                                 }
                                 tbody {
-                                    it.value.forEach {
+                                    it.value.forEach { transaction ->
                                         tr {
                                             th(scope = ThScope.row) {
-                                                +it.concept
+                                                +transaction.concept
                                             }
                                             td {
-                                                +"${it.date}"
+                                                +"${transaction.date}"
                                             }
                                             td {
-                                                +"${it.amount}"
+                                                +"${transaction.amount}"
                                             }
                                             td {
-                                                +"${it.category}"
+                                                div("dropdown") {
+
+													button(classes = "btn btn-secondary dropdown-toggle") {
+							                            attributes["data-bs-toggle"] = "dropdown"
+							                            attributes["aria-expanded"] = "false"
+														+ "${transaction.category}"
+													}
+
+                                                    ul("dropdown-menu") {
+														TransactionCategory.values().forEach { category ->
+                                                            li {
+
+																form(
+                                               						"/accounts/${account.id}/transactions/${transaction.id}",
+																	encType = FormEncType.applicationXWwwFormUrlEncoded,
+																	method = FormMethod.post,
+																) {
+																	id = "updateForm"
+																	// TODO: make a post to update the category
+																	// TODO: fix category listing as it is showint
+																	input(classes = "form-control visually-hidden") {
+																		type = InputType.text
+																		id = "category"
+																		name = "category"
+																		attributes["aria-describedby"] = "formAccountName"
+																		value = "$category"
+																	}
+
+																	if(category == transaction.category) {
+																		button(classes ="dropdown-item active") {
+																			attributes["aria-current"] = "true"
+																			type = ButtonType.submit
+																			+"$category"
+																		}
+																	}
+																	else {
+																		button(classes = "dropdown-item") {
+																			type = ButtonType.submit
+																			+"$category"
+																		}
+																	}
+																}
+                                                            }
+                                                        }
+                                                    }
+                                                }
                                             }
                                             td {
-                                                a("/transactions/${it.id}/delete") {
+                                                a("/accounts/${account.id}/transactions/${transaction.id}/delete") {
                                                     +"Delete x"
                                                 }
                                             }

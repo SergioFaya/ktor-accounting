@@ -1,9 +1,11 @@
 package nomad.digital.infrastructure.storage.exposed
 
 import nomad.digital.domain.AccountTransaction
+import nomad.digital.domain.TransactionCategory
 import nomad.digital.infrastructure.storage.exposed.config.DatabaseFactory.dbQuery
 import nomad.digital.infrastructure.storage.exposed.entity.AccountEntity
 import nomad.digital.infrastructure.storage.exposed.entity.AccountTransactionEntity
+import org.jetbrains.exposed.sql.*
 
 suspend fun batchInsertAccountTransactions(
     accountId: Long,
@@ -28,5 +30,17 @@ suspend fun deleteTransactions(
 
     transactionIds.forEach { transactionId ->
         AccountTransactionEntity[transactionId].delete()
+    }
+}
+
+suspend fun updateTransaction(
+    accountId: Long,
+    transactionId: Long,
+    category: TransactionCategory,
+) = dbQuery {
+    // TODO: check account id additionally
+
+	AccountTransactionEntity.findById(transactionId)?.let {
+        it.category = category.name
     }
 }

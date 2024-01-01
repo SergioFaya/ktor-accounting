@@ -7,8 +7,6 @@ import io.ktor.http.content.streamProvider
 import io.ktor.resources.Resource
 import io.ktor.server.application.call
 import io.ktor.server.html.respondHtml
-import nomad.digital.infrastructure.storage.exposed.deleteTransactions
-
 import io.ktor.server.request.receive
 import io.ktor.server.request.receiveMultipart
 import io.ktor.server.request.receiveParameters
@@ -18,11 +16,15 @@ import io.ktor.server.response.respondRedirect
 import io.ktor.server.routing.Route
 import kotlinx.coroutines.runBlocking
 import nomad.digital.domain.Account
+import nomad.digital.domain.AccountTransaction
+import nomad.digital.domain.TransactionCategory
 import nomad.digital.infrastructure.readBankTransactions
 import nomad.digital.infrastructure.storage.exposed.addAccount
 import nomad.digital.infrastructure.storage.exposed.deleteAccount
+import nomad.digital.infrastructure.storage.exposed.deleteTransactions
 import nomad.digital.infrastructure.storage.exposed.findAccount
 import nomad.digital.infrastructure.storage.exposed.findAccounts
+import nomad.digital.infrastructure.storage.exposed.updateTransaction
 
 @Resource("/accounts")
 class AccountResource {
@@ -37,22 +39,53 @@ class AccountResource {
 
     @Resource("{id}/transactions")
     class UploadTransactions(val parent: AccountResource = AccountResource(), val id: Long)
-}
 
-@Resource("/transactions")
-class TransactionsResource {
-    @Resource("{id}/delete")
-    class DeleteById(val parent: TransactionsResource = TransactionsResource(), val id: Long)
+    @Resource("/{id}/transactions/{transactionId}/delete")
+    class DeleteTransactionById(val parent: AccountResource = AccountResource(), val id: Long, val transactionId: Long)
+
+    @Resource("/{id}/transactions/{transactionId}")
+    class TransactionById(val parent: AccountResource = AccountResource(), val id: Long, val transactionId: Long)
 }
 
 fun Route.accountsRouter() {
-    get<TransactionsResource.DeleteById> { deleteById ->
+    post<AccountResource.TransactionById> { updateById ->
 
-        val id = deleteById.id
+        val accountId = updateById.id
+        val transactionId = updateById.transactionId
 
-        deleteTransactions(1, listOf(deleteById.id))
+        val category: TransactionCategory =
+            when (val contentType = call.request.headers["Content-Type"]) {
+                ContentType.Application.Json.toString() -> call.receive<AccountTransaction>().category
 
-        call.respondRedirect("/accounts/1")
+                ContentType.Application.FormUrlEncoded.toString() -> {
+                    val formParameters = call.receiveParameters()
+                    val categoryString = formParameters[AccountTransaction::category.name]
+                    if(categoryString == null){
+						println("invalid input name")
+						return@post
+					}
+					TransactionCategory.valueOf(categoryString)
+                }
+
+                else -> {
+                    call.defaultErrorResponse("Cannot handle content type $contentType")
+                    return@post
+                }
+            }
+
+        updateTransaction(accountId, transactionId, category)
+
+        call.respondRedirect("/accounts/$accountId")
+    }
+
+    get<AccountResource.DeleteTransactionById> { deleteById ->
+
+        val accountId = deleteById.id
+        val transactionId = deleteById.transactionId
+
+        deleteTransactions(accountId, listOf(transactionId))
+
+        call.respondRedirect("/accounts/$accountId")
     }
 
     get<AccountResource> {

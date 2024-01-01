@@ -18,5 +18,7 @@ fun AccountEntity.toAccount() =
     Account(
         id = id.value,
         accountName = title,
-        accountTransactions = transactions.map(AccountTransactionEntity::toTransaction),
+        accountTransactions = transactions
+			.map(AccountTransactionEntity::toTransaction)
+			.sortedBy { it.date },
     )
