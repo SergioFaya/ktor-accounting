@@ -40,7 +40,7 @@ suspend fun updateTransaction(
 ) = dbQuery {
     // TODO: check account id additionally
 
-	AccountTransactionEntity.findById(transactionId)?.let {
+    AccountTransactionEntity.findById(transactionId)?.let {
         it.category = category.name
     }
 }

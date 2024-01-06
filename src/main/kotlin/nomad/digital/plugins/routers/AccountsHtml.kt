@@ -1,5 +1,6 @@
 package nomad.digital.plugins.routers
 
+import kotlinx.html.*
 import kotlinx.html.ButtonType
 import kotlinx.html.DIV
 import kotlinx.html.FormEncType
@@ -9,11 +10,8 @@ import kotlinx.html.InputType
 import kotlinx.html.ThScope
 import kotlinx.html.a
 import kotlinx.html.button
-import kotlinx.html.div
-import kotlinx.html.script
 import kotlinx.html.canvas
-import kotlinx.html.unsafe
-import kotlinx.html.*
+import kotlinx.html.div
 import kotlinx.html.form
 import kotlinx.html.h1
 import kotlinx.html.h2
@@ -22,6 +20,7 @@ import kotlinx.html.input
 import kotlinx.html.label
 import kotlinx.html.li
 import kotlinx.html.p
+import kotlinx.html.script
 import kotlinx.html.tabIndex
 import kotlinx.html.table
 import kotlinx.html.tbody
@@ -30,6 +29,7 @@ import kotlinx.html.th
 import kotlinx.html.thead
 import kotlinx.html.tr
 import kotlinx.html.ul
+import kotlinx.html.unsafe
 import nomad.digital.domain.Account
 import nomad.digital.domain.TransactionCategory
 import java.math.BigDecimal
@@ -61,6 +61,48 @@ private fun HTML.accountPageBase(
                     actions()
                 }
             }
+        }
+    }
+}
+
+private fun DIV.lineChart(
+    labels: List<String>,
+    values: List<BigDecimal>,
+) {
+    canvas {
+        id = "canvas-id"
+    }
+
+    script {
+        src = "https://cdn.jsdelivr.net/npm/chart.js@4.0.1/dist/chart.umd.min.js"
+        attributes["crossorigin"] = "anonymous"
+    }
+    script {
+        unsafe {
+            raw(
+                """
+                |new Chart(document.getElementById("canvas-id"), {
+                |	type : 'line',
+                |	data : {
+                |		labels : [ ${labels.joinToString(","){"'$it'"} } ],
+                |		datasets : [
+                |				{
+                |					data : [ ${values.joinToString(","){"'$it'"} } ],
+                |					label : "Savings",
+                |					borderColor : "#3cba9f",
+                |					fill: true,
+                |					stepped: true
+                |				}]
+                |	},
+                |	options : {
+                |		title : {
+                |			display : true,
+                |			text : 'Savings'
+                |		}
+                |	}
+                |});
+                """.trimMargin(),
+            )
         }
     }
 }
@@ -127,49 +169,19 @@ internal fun HTML.listAccount(account: Account) =
             }
         }
 
-		canvas {
-			id = "canvas-id"
+        val accountsTransactions = account.accountTransactions.groupBy { "${it.date.month}-${it.date.year}" }
 
-		}
+        val labels = account.accountTransactions.map { "${it.date.dayOfMonth}-${it.date.month}-${it.date.year}" }
 
-		script {
-            src = "https://cdn.jsdelivr.net/npm/chart.js@4.0.1/dist/chart.umd.min.js"
-            attributes["crossorigin"] = "anonymous"
-        }
+        var accumulator = BigDecimal(0)
 
-		val accountsTransactions = account.accountTransactions.groupBy { "${it.date.month}-${it.date.year}" }
+        val dataset =
+            account.accountTransactions.map { transaction ->
+                accumulator = accumulator + transaction.amount
+                accumulator
+            }
 
-		val labels = account.accountTransactions.filter{ it.category == TransactionCategory.SAVING }.map{ "${it.date.month}-${it.date.year}" }
-		val dataset = account.accountTransactions.filter{it.category == TransactionCategory.SAVING }.map{ it.amount }
-
-		script {
-
-			unsafe {
-				raw("""
-					|new Chart(document.getElementById("canvas-id"), {
-					|	type : 'line',
-					|	data : {
-					|		labels : [ ${labels.joinToString(","){"'$it'"} } ],
-					|		datasets : [
-					|				{
-					|					data : [ ${dataset.joinToString(","){"'${it}'"} } ],
-					|					label : "Savings",
-					|					borderColor : "#3cba9f",
-					|					fill : false
-					|				}]
-					|	},
-					|	options : {
-					|		title : {
-					|			display : true,
-					|			text : 'Chart JS Line Chart Example'
-					|		}
-					|	}
-					|});
-					""".trimMargin()
-				)
-			}
-
-		}
+        lineChart(labels = labels, values = dataset)
 
         div("accordion") {
             id = "accordionPanelsStayOpenExample"
@@ -223,47 +235,44 @@ internal fun HTML.listAccount(account: Account) =
                                             }
                                             td {
                                                 div("dropdown") {
-
-													button(classes = "btn btn-secondary dropdown-toggle") {
-							                            attributes["data-bs-toggle"] = "dropdown"
-							                            attributes["aria-expanded"] = "false"
-														+ "${transaction.category}"
-													}
+                                                    button(classes = "btn btn-secondary dropdown-toggle") {
+                                                        attributes["data-bs-toggle"] = "dropdown"
+                                                        attributes["aria-expanded"] = "false"
+                                                        +"${transaction.category}"
+                                                    }
 
                                                     ul("dropdown-menu") {
-														TransactionCategory.values().forEach { category ->
+                                                        TransactionCategory.values().forEach { category ->
                                                             li {
+                                                                form(
+                                                                    "/accounts/${account.id}/transactions/${transaction.id}",
+                                                                    encType = FormEncType.applicationXWwwFormUrlEncoded,
+                                                                    method = FormMethod.post,
+                                                                ) {
+                                                                    id = "updateForm"
+                                                                    // TODO: make a post to update the category
+                                                                    // TODO: fix category listing as it is showint
+                                                                    input(classes = "form-control visually-hidden") {
+                                                                        type = InputType.text
+                                                                        id = "category"
+                                                                        name = "category"
+                                                                        attributes["aria-describedby"] = "formAccountName"
+                                                                        value = "$category"
+                                                                    }
 
-																form(
-                                               						"/accounts/${account.id}/transactions/${transaction.id}",
-																	encType = FormEncType.applicationXWwwFormUrlEncoded,
-																	method = FormMethod.post,
-																) {
-																	id = "updateForm"
-																	// TODO: make a post to update the category
-																	// TODO: fix category listing as it is showint
-																	input(classes = "form-control visually-hidden") {
-																		type = InputType.text
-																		id = "category"
-																		name = "category"
-																		attributes["aria-describedby"] = "formAccountName"
-																		value = "$category"
-																	}
-
-																	if(category == transaction.category) {
-																		button(classes ="dropdown-item active") {
-																			attributes["aria-current"] = "true"
-																			type = ButtonType.submit
-																			+"$category"
-																		}
-																	}
-																	else {
-																		button(classes = "dropdown-item") {
-																			type = ButtonType.submit
-																			+"$category"
-																		}
-																	}
-																}
+                                                                    if (category == transaction.category) {
+                                                                        button(classes = "dropdown-item active") {
+                                                                            attributes["aria-current"] = "true"
+                                                                            type = ButtonType.submit
+                                                                            +"$category"
+                                                                        }
+                                                                    } else {
+                                                                        button(classes = "dropdown-item") {
+                                                                            type = ButtonType.submit
+                                                                            +"$category"
+                                                                        }
+                                                                    }
+                                                                }
                                                             }
                                                         }
                                                     }
@@ -285,97 +294,98 @@ internal fun HTML.listAccount(account: Account) =
         }
     }
 
-internal fun HTML.listAccounts(accounts: List<Account>, balance: BigDecimal, categoriesBalance: Map<TransactionCategory,BigDecimal>) =
-    accountPageBase("Your accounts", actions = {
-        button(classes = "btn btn-dark btn-block") {
-            type = ButtonType.button
-            attributes["data-bs-toggle"] = "modal"
-            attributes["data-bs-target"] = "#newAccountModal"
-            +"New Account"
-        }
-    }) {
-        div("modal fade") {
-            id = "newAccountModal"
-            tabIndex = "-1"
-            attributes["aria-labelledby"] = "newAccountModalLabel"
-            attributes["aria-hidden"] = "true"
-            div("modal-dialog") {
-                div("modal-content") {
-                    div("modal-header") {
-                        h1("modal-title fs-5") {
-                            id = "newAccountModalLabel"
-                            +"Add Account"
-                        }
-                        button(classes = "btn-close") {
-                            type = ButtonType.button
-                            attributes["data-bs-dismiss"] = "modal"
-                            attributes["aria-label"] = "Close"
-                        }
+internal fun HTML.listAccounts(
+    accounts: List<Account>,
+    balance: BigDecimal,
+    categoriesBalance: Map<TransactionCategory, BigDecimal>,
+) = accountPageBase("Your accounts", actions = {
+    button(classes = "btn btn-dark btn-block") {
+        type = ButtonType.button
+        attributes["data-bs-toggle"] = "modal"
+        attributes["data-bs-target"] = "#newAccountModal"
+        +"New Account"
+    }
+}) {
+    div("modal fade") {
+        id = "newAccountModal"
+        tabIndex = "-1"
+        attributes["aria-labelledby"] = "newAccountModalLabel"
+        attributes["aria-hidden"] = "true"
+        div("modal-dialog") {
+            div("modal-content") {
+                div("modal-header") {
+                    h1("modal-title fs-5") {
+                        id = "newAccountModalLabel"
+                        +"Add Account"
                     }
-                    form(
-                        "/accounts/new",
-                        encType = FormEncType.applicationXWwwFormUrlEncoded,
-                        method = FormMethod.post,
-                    ) {
-                        id = "newAccountForm"
-                        div("modal-body mb-3") {
-                            label("form-label") {
-                                htmlFor = "accountName"
-                                +"Account Name"
-                            }
-                            input(classes = "form-control") {
-                                type = InputType.text
-                                id = "accountName"
-                                name = "accountName"
-                                attributes["aria-describedby"] = "formAccountName"
-                            }
-                            div("form-text") {
-                                id = "formAccountName"
-                                +"Name of the account to open"
-                            }
-                        }
-
-                        div("modal-footer") {
-                            button(classes = "btn btn-primary") {
-                                attributes["data-bs-dismiss"] = "modal"
-                                type = ButtonType.submit
-                                +"Submit"
-                            }
-                        }
+                    button(classes = "btn-close") {
+                        type = ButtonType.button
+                        attributes["data-bs-dismiss"] = "modal"
+                        attributes["aria-label"] = "Close"
                     }
                 }
-            }
-        }
+                form(
+                    "/accounts/new",
+                    encType = FormEncType.applicationXWwwFormUrlEncoded,
+                    method = FormMethod.post,
+                ) {
+                    id = "newAccountForm"
+                    div("modal-body mb-3") {
+                        label("form-label") {
+                            htmlFor = "accountName"
+                            +"Account Name"
+                        }
+                        input(classes = "form-control") {
+                            type = InputType.text
+                            id = "accountName"
+                            name = "accountName"
+                            attributes["aria-describedby"] = "formAccountName"
+                        }
+                        div("form-text") {
+                            id = "formAccountName"
+                            +"Name of the account to open"
+                        }
+                    }
 
-        div(classes = "row px-4") {
-            ul {
-
-				categoriesBalance.forEach {
-                    li {
-						+"${it.key}: ${it.value}"
-					}
-				}
-			}
-
-
-			p {+"Balance: $balance"}
-		}
-
-        div(classes = "row px-4") {
-            ul {
-                accounts.forEach {
-                    li {
-                        val link = "/accounts/${it.id}"
-
-                        div {
-                            a(link) { +"Account ${it.accountName}" }
-                            +"|"
-                            a("$link/delete") {
-                                +"Delete ${it.accountName}"
-                            }
+                    div("modal-footer") {
+                        button(classes = "btn btn-primary") {
+                            attributes["data-bs-dismiss"] = "modal"
+                            type = ButtonType.submit
+                            +"Submit"
                         }
                     }
                 }
             }
         }
     }
+
+    div(classes = "row px-4") {
+        ul {
+            categoriesBalance.forEach {
+                li {
+                    +"${it.key}: ${it.value}"
+                }
+            }
+        }
+
+        p { +"Balance: $balance" }
+    }
+
+    div(classes = "row px-4") {
+        ul {
+            accounts.forEach {
+                li {
+                    val link = "/accounts/${it.id}"
+
+                    div {
+                        a(link) { +"Account ${it.accountName}" }
+                        +"|"
+                        a("$link/delete") {
+                            +"Delete ${it.accountName}"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

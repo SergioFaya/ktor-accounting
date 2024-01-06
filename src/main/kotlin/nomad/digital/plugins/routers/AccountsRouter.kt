@@ -61,11 +61,12 @@ fun Route.accountsRouter() {
                 ContentType.Application.FormUrlEncoded.toString() -> {
                     val formParameters = call.receiveParameters()
                     val categoryString = formParameters[AccountTransaction::category.name]
-                    if(categoryString == null){
-						println("invalid input name")
-						return@post
-					}
-					TransactionCategory.valueOf(categoryString)
+                    if (categoryString == null)
+                        {
+                            println("invalid input name")
+                            return@post
+                        }
+                    TransactionCategory.valueOf(categoryString)
                 }
 
                 else -> {
@@ -90,16 +91,17 @@ fun Route.accountsRouter() {
     }
 
     get<AccountResource> {
-        val accounts = runBlocking {
-			findAccounts()
-		}
+        val accounts =
+            runBlocking {
+                findAccounts()
+            }
 
-		val transactions = accounts.flatMap { it.accountTransactions }
-		val balance = transactions.fold(BigDecimal(0)) { acc: BigDecimal, element: AccountTransaction -> acc + element.amount }
+        val transactions = accounts.flatMap { it.accountTransactions }
+        val balance = transactions.fold(BigDecimal(0)) { acc: BigDecimal, element: AccountTransaction -> acc + element.amount }
 
-		val categoriesBalance : Map<TransactionCategory, BigDecimal> = transactions.groupingBy { it.category }
-									.foldTo(mutableMapOf(), BigDecimal(0)) { acc: BigDecimal, e: AccountTransaction -> acc+e.amount}
-
+        val categoriesBalance: Map<TransactionCategory, BigDecimal> =
+            transactions.groupingBy { it.category }
+                .foldTo(mutableMapOf(), BigDecimal(0)) { acc: BigDecimal, e: AccountTransaction -> acc + e.amount }
 
         call.respondHtml {
             listAccounts(accounts, balance, categoriesBalance)
