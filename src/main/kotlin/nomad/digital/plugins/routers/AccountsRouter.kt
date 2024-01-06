@@ -25,6 +25,7 @@ import nomad.digital.infrastructure.storage.exposed.deleteTransactions
 import nomad.digital.infrastructure.storage.exposed.findAccount
 import nomad.digital.infrastructure.storage.exposed.findAccounts
 import nomad.digital.infrastructure.storage.exposed.updateTransaction
+import java.math.BigDecimal
 
 @Resource("/accounts")
 class AccountResource {
@@ -89,12 +90,19 @@ fun Route.accountsRouter() {
     }
 
     get<AccountResource> {
-        val accounts =
-            runBlocking {
-                findAccounts()
-            }
+        val accounts = runBlocking {
+			findAccounts()
+		}
+
+		val transactions = accounts.flatMap { it.accountTransactions }
+		val balance = transactions.fold(BigDecimal(0)) { acc: BigDecimal, element: AccountTransaction -> acc + element.amount }
+
+		val categoriesBalance : Map<TransactionCategory, BigDecimal> = transactions.groupingBy { it.category }
+									.foldTo(mutableMapOf(), BigDecimal(0)) { acc: BigDecimal, e: AccountTransaction -> acc+e.amount}
+
+
         call.respondHtml {
-            listAccounts(accounts)
+            listAccounts(accounts, balance, categoriesBalance)
         }
     }
 

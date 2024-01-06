@@ -10,6 +10,10 @@ import kotlinx.html.ThScope
 import kotlinx.html.a
 import kotlinx.html.button
 import kotlinx.html.div
+import kotlinx.html.script
+import kotlinx.html.canvas
+import kotlinx.html.unsafe
+import kotlinx.html.*
 import kotlinx.html.form
 import kotlinx.html.h1
 import kotlinx.html.h2
@@ -123,10 +127,52 @@ internal fun HTML.listAccount(account: Account) =
             }
         }
 
+		canvas {
+			id = "canvas-id"
+
+		}
+
+		script {
+            src = "https://cdn.jsdelivr.net/npm/chart.js@4.0.1/dist/chart.umd.min.js"
+            attributes["crossorigin"] = "anonymous"
+        }
+
+		val accountsTransactions = account.accountTransactions.groupBy { "${it.date.month}-${it.date.year}" }
+
+		val labels = account.accountTransactions.filter{ it.category == TransactionCategory.SAVING }.map{ "${it.date.month}-${it.date.year}" }
+		val dataset = account.accountTransactions.filter{it.category == TransactionCategory.SAVING }.map{ it.amount }
+
+		script {
+
+			unsafe {
+				raw("""
+					|new Chart(document.getElementById("canvas-id"), {
+					|	type : 'line',
+					|	data : {
+					|		labels : [ ${labels.joinToString(","){"'$it'"} } ],
+					|		datasets : [
+					|				{
+					|					data : [ ${dataset.joinToString(","){"'${it}'"} } ],
+					|					label : "Savings",
+					|					borderColor : "#3cba9f",
+					|					fill : false
+					|				}]
+					|	},
+					|	options : {
+					|		title : {
+					|			display : true,
+					|			text : 'Chart JS Line Chart Example'
+					|		}
+					|	}
+					|});
+					""".trimMargin()
+				)
+			}
+
+		}
+
         div("accordion") {
             id = "accordionPanelsStayOpenExample"
-
-            val accountsTransactions = account.accountTransactions.groupBy { "${it.date.month}-${it.date.year}" }
 
             accountsTransactions.forEach {
                 div("accordion-item") {
@@ -239,7 +285,7 @@ internal fun HTML.listAccount(account: Account) =
         }
     }
 
-internal fun HTML.listAccounts(accounts: List<Account>) =
+internal fun HTML.listAccounts(accounts: List<Account>, balance: BigDecimal, categoriesBalance: Map<TransactionCategory,BigDecimal>) =
     accountPageBase("Your accounts", actions = {
         button(classes = "btn btn-dark btn-block") {
             type = ButtonType.button
@@ -300,6 +346,21 @@ internal fun HTML.listAccounts(accounts: List<Account>) =
                 }
             }
         }
+
+        div(classes = "row px-4") {
+            ul {
+
+				categoriesBalance.forEach {
+                    li {
+						+"${it.key}: ${it.value}"
+					}
+				}
+			}
+
+
+			p {+"Balance: $balance"}
+		}
+
         div(classes = "row px-4") {
             ul {
                 accounts.forEach {

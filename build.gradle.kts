@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm") version "1.9.0"
     id("io.ktor.plugin") version "2.3.3"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
-    // TODO: id("org.jlleitschuh.gradle.ktlint") version "7.1.0"
+    // id("org.jlleitschuh.gradle.ktlint") version "7.1.0"
 }
 
 group = "nomad.digital"

@@ -35,9 +35,6 @@ private fun String.parseAsNumber(): BigDecimal {
 /**
  * TODO: add thread locking mechanism for several uploads at the time
  * consider deleting while uploading
- */
-
-/**
  * F. Operativa,Concepto,F. Valor,Importe,Saldo,Referencia 1,Referencia 2
  * 30/10/2023,COMPRA TARJ LIDL MAD-MERCADO TETU\-MADRID,31/10/2023,"-7,36","4.715,40",,3333_3333
  */
