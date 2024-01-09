@@ -61,11 +61,10 @@ fun Route.accountsRouter() {
                 ContentType.Application.FormUrlEncoded.toString() -> {
                     val formParameters = call.receiveParameters()
                     val categoryString = formParameters[AccountTransaction::category.name]
-                    if (categoryString == null)
-                        {
-                            println("invalid input name")
-                            return@post
-                        }
+                    if (categoryString == null) {
+                        println("invalid input name")
+                        return@post
+                    }
                     TransactionCategory.valueOf(categoryString)
                 }
 
@@ -137,7 +136,7 @@ fun Route.accountsRouter() {
                     return@post
                 }
             }
-
+		println("new account with name $accountName")
         addAccount(Account(accountName = accountName))
         call.respondRedirect("/accounts")
     }

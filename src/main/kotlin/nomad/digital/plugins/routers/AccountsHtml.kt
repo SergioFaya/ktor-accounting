@@ -54,11 +54,82 @@ private fun HTML.accountPageBase(
                 div(classes = "card-body") {
                     p { +"Total Savings" }
                     p { +"Total Investment" }
-
                     p { +"TODO: add savings performance" }
                 }
                 div("card-footer d-grid gap-2") {
                     actions()
+                }
+            }
+        }
+    }
+}
+
+private fun DIV.confirmModal(
+    modalId: String = "modal",
+    title: String = "title",
+    formUrl: String = "/",
+    method: FormMethod = FormMethod.get,
+    confirmationMessage: String = "Agree to proceed?",
+) {
+    formModal(
+        modalId = modalId,
+        title = title,
+        formUrl = formUrl,
+        method = method,
+    ) {
+        p { +confirmationMessage }
+    }
+}
+
+private fun DIV.formModal(
+    modalId: String = "modal",
+    title: String = "title",
+    formUrl: String = "/",
+	encoding: FormEncType = FormEncType.applicationXWwwFormUrlEncoded,
+    method: FormMethod = FormMethod.post,
+    modalBody: DIV.() -> Unit = {},
+) {
+    button(classes = "btn btn-dark btn-block") {
+        type = ButtonType.button
+        attributes["data-bs-toggle"] = "modal"
+        attributes["data-bs-target"] = "#$modalId"
+        +title
+    }
+
+    div("modal fade") {
+        id = modalId
+        tabIndex = "-1"
+        attributes["aria-labelledby"] = "${modalId}Label"
+        attributes["aria-hidden"] = "true"
+        div("modal-dialog") {
+            div("modal-content") {
+                div("modal-header") {
+                    h1("modal-title fs-5") {
+                        id = "${modalId}Label"
+                        +title
+                    }
+                    button(classes = "btn-close") {
+                        type = ButtonType.button
+                        attributes["data-bs-dismiss"] = "modal"
+                        attributes["aria-label"] = "Close"
+                    }
+                }
+                form(
+                    formUrl,
+                    encType = encoding,
+                    method = method,
+                ) {
+                    id = "${modalId}Form"
+                    div("modal-body mb-3") {
+                        modalBody()
+                    }
+                    div("modal-footer") {
+                        button(classes = "btn btn-primary") {
+                            attributes["data-bs-dismiss"] = "modal"
+                            type = ButtonType.submit
+                            +"Submit"
+                        }
+                    }
                 }
             }
         }
@@ -108,67 +179,30 @@ private fun DIV.lineChart(
 }
 
 internal fun HTML.listAccount(account: Account) =
-    accountPageBase("Account information: ${account.accountName}", actions = {
-        button(classes = "btn btn-dark btn-block") {
-            type = ButtonType.button
-            attributes["data-bs-toggle"] = "modal"
-            attributes["data-bs-target"] = "#newTransactionModal"
-            +"Add Transactions"
-        }
-    }) {
-        div("modal fade") {
-            id = "newTransactionModal"
-            tabIndex = "-1"
-            attributes["aria-labelledby"] = "newTransactionModalLabel"
-            attributes["aria-hidden"] = "true"
-            div("modal-dialog") {
-                div("modal-content") {
-                    div("modal-header") {
-                        h1("modal-title fs-5") {
-                            id = "newTransactionModalLabel"
-                            +"Add Transactions"
-                        }
-                        button(classes = "btn-close") {
-                            type = ButtonType.button
-                            attributes["data-bs-dismiss"] = "modal"
-                            attributes["aria-label"] = "Close"
-                        }
-                    }
-                    form(
-                        "/accounts/${account.id}/transactions",
-                        encType = FormEncType.multipartFormData,
-                        method = FormMethod.post,
-                    ) {
-                        id = "transactionFileForm"
-                        div("modal-body mb-3") {
-                            label("form-label") {
-                                htmlFor = "accountName"
-                                +"Account Transactions"
-                            }
-                            input(classes = "form-control") {
-                                type = InputType.file
-                                id = "accountTransactions"
-                                name = "accountTransactions"
-                                attributes["aria-describedby"] = "formAccountTransactions"
-                            }
-                            div("form-text") {
-                                id = "formAccountTransactions"
-                                +"Headerless CSV values of the transactions following this format - Operativa,Concepto,F. Valor,Importe,Saldo,Referencia 1,Referencia 2"
-                            }
-                        }
-
-                        div("modal-footer") {
-                            button(classes = "btn btn-primary") {
-                                attributes["data-bs-dismiss"] = "modal"
-                                type = ButtonType.submit
-                                +"Submit"
-                            }
-                        }
-                    }
-                }
+    accountPageBase("Account information: ${account.accountName}",
+	actions = {
+        formModal(
+            modalId = "newTransactionModal",
+            title = "Add Transactions",
+			encoding = FormEncType.multipartFormData,
+            formUrl = "/accounts/${account.id}/transactions",
+        ) {
+            label("form-label") {
+                htmlFor = "accountName"
+                +"Account Transactions"
+            }
+            input(classes = "form-control") {
+                type = InputType.file
+                id = "accountTransactions"
+                name = "accountTransactions"
+                attributes["aria-describedby"] = "formAccountTransactions"
+            }
+            div("form-text") {
+                id = "formAccountTransactions"
+                +"Bank Sabadell xlsx format without headers"
             }
         }
-
+    }) {
         val accountsTransactions = account.accountTransactions.groupBy { "${it.date.month}-${it.date.year}" }
 
         val labels = account.accountTransactions.map { "${it.date.dayOfMonth}-${it.date.month}-${it.date.year}" }
@@ -279,9 +313,14 @@ internal fun HTML.listAccount(account: Account) =
                                                 }
                                             }
                                             td {
-                                                a("/accounts/${account.id}/transactions/${transaction.id}/delete") {
-                                                    +"Delete x"
-                                                }
+												div{
+													confirmModal(
+														modalId = "confirmDeleteModal",
+														title = "Delete transaction?",
+														formUrl = "/accounts/${account.id}/transactions/${transaction.id}/delete",
+														confirmationMessage = "Transaction ${transaction.concept} will be deleted",
+													)
+												}
                                             }
                                         }
                                     }
@@ -298,94 +337,66 @@ internal fun HTML.listAccounts(
     accounts: List<Account>,
     balance: BigDecimal,
     categoriesBalance: Map<TransactionCategory, BigDecimal>,
-) = accountPageBase("Your accounts", actions = {
-    button(classes = "btn btn-dark btn-block") {
-        type = ButtonType.button
-        attributes["data-bs-toggle"] = "modal"
-        attributes["data-bs-target"] = "#newAccountModal"
-        +"New Account"
-    }
-}) {
-    div("modal fade") {
-        id = "newAccountModal"
-        tabIndex = "-1"
-        attributes["aria-labelledby"] = "newAccountModalLabel"
-        attributes["aria-hidden"] = "true"
-        div("modal-dialog") {
-            div("modal-content") {
-                div("modal-header") {
-                    h1("modal-title fs-5") {
-                        id = "newAccountModalLabel"
-                        +"Add Account"
-                    }
-                    button(classes = "btn-close") {
-                        type = ButtonType.button
-                        attributes["data-bs-dismiss"] = "modal"
-                        attributes["aria-label"] = "Close"
+) =
+    accountPageBase(
+        "Your accounts",
+        actions = {
+			formModal(
+				modalId = "newAccountModal",
+				title = "New Account",
+				formUrl = "/accounts/new",
+			) {
+				label("form-label") {
+					htmlFor = "accountName"
+					+"Account Name"
+				}
+				input(classes = "form-control") {
+					type = InputType.text
+					id = "accountName"
+					name = "accountName"
+					attributes["aria-describedby"] = "formAccountName"
+				}
+				div("form-text") {
+					id = "formAccountName"
+					+"Name of the account to open"
+				}
+			}
+
+            button(classes = "btn btn-dark btn-block") {
+                type = ButtonType.button
+                attributes["data-bs-toggle"] = "modal"
+                attributes["data-bs-target"] = "#newAccountModal"
+                +"Manage Categories"
+            }
+        },
+    ) {
+
+        div(classes = "row px-4") {
+            ul {
+                categoriesBalance.forEach {
+                    li {
+                        +"${it.key}: ${it.value}"
                     }
                 }
-                form(
-                    "/accounts/new",
-                    encType = FormEncType.applicationXWwwFormUrlEncoded,
-                    method = FormMethod.post,
-                ) {
-                    id = "newAccountForm"
-                    div("modal-body mb-3") {
-                        label("form-label") {
-                            htmlFor = "accountName"
-                            +"Account Name"
-                        }
-                        input(classes = "form-control") {
-                            type = InputType.text
-                            id = "accountName"
-                            name = "accountName"
-                            attributes["aria-describedby"] = "formAccountName"
-                        }
-                        div("form-text") {
-                            id = "formAccountName"
-                            +"Name of the account to open"
-                        }
-                    }
+            }
+            p { +"Balance: $balance" }
+        }
 
-                    div("modal-footer") {
-                        button(classes = "btn btn-primary") {
-                            attributes["data-bs-dismiss"] = "modal"
-                            type = ButtonType.submit
-                            +"Submit"
+        div(classes = "row px-4") {
+            ul {
+                accounts.forEach {
+                    li {
+                        val link = "/accounts/${it.id}"
+
+                        div {
+                            a(link) { +"Account ${it.accountName}" }
+                            +"|"
+                            a("$link/delete") {
+                                +"Delete ${it.accountName}"
+                            }
                         }
                     }
                 }
             }
         }
     }
-
-    div(classes = "row px-4") {
-        ul {
-            categoriesBalance.forEach {
-                li {
-                    +"${it.key}: ${it.value}"
-                }
-            }
-        }
-
-        p { +"Balance: $balance" }
-    }
-
-    div(classes = "row px-4") {
-        ul {
-            accounts.forEach {
-                li {
-                    val link = "/accounts/${it.id}"
-
-                    div {
-                        a(link) { +"Account ${it.accountName}" }
-                        +"|"
-                        a("$link/delete") {
-                            +"Delete ${it.accountName}"
-                        }
-                    }
-                }
-            }
-        }
-    }
-}

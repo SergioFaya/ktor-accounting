@@ -31,3 +31,9 @@ enum class TransactionCategory {
     OTHER,
     UNSET,
 }
+
+@Serializable
+data class CustomCategory(
+    val id: Long? = null,
+    val name: String,
+)

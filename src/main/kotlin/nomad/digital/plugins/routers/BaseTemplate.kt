@@ -22,7 +22,7 @@ fun HTML.baseTemplate(content: DIV.() -> Unit = {}) {
         }
         meta { charset = "utf-8" }
         meta { name = "viewport" }
-        title { +"Bootstrap demo" }
+        title { +"Ktor accounting" }
     }
     body {
         nav("navbar bg-dark border-bottom border-body") {
