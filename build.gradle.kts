@@ -1,12 +1,12 @@
-val ktor_version: String by project
-val kotlin_version: String by project
-val logback_version: String by project
+val ktorVersion: String by project
+val kotlinVersion: String by project
+val logbackVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.9.0"
     id("io.ktor.plugin") version "2.3.3"
     id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
-    // id("org.jlleitschuh.gradle.ktlint") version "7.1.0"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
 }
 
 group = "nomad.digital"
@@ -50,12 +50,12 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
     implementation("io.ktor:ktor-server-resources")
     implementation("io.ktor:ktor-server-netty-jvm")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
 
     implementation("org.webjars:bootstrap:5.2.3")
 
     // status pages for exception handling
-    implementation("io.ktor:ktor-server-status-pages:$ktor_version")
+    implementation("io.ktor:ktor-server-status-pages:$ktorVersion")
 
     // processing excel
     implementation("org.apache.poi:poi:5.2.3")
@@ -63,9 +63,9 @@ dependencies {
 
     // testing
     testImplementation("io.ktor:ktor-server-tests-jvm")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.2")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$kotlin_version")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$kotlinVersion")
 
     testImplementation(platform("org.junit:junit-bom:5.10.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -78,6 +78,19 @@ tasks.test {
     useJUnitPlatform()
     testLogging {
         events("passed", "skipped", "failed")
+    }
+}
+
+ktlint {
+    version.set("1.1.1")
+
+    filter {
+        exclude {
+            projectDir.toURI().relativize(it.file.toURI()).path.contains("/generated/")
+        }
+        exclude {
+            projectDir.toURI().relativize(it.file.toURI()).path.contains("gradle.kts")
+        }
     }
 }
 

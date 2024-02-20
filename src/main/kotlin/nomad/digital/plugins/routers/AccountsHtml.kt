@@ -1,6 +1,5 @@
 package nomad.digital.plugins.routers
 
-import kotlinx.html.*
 import kotlinx.html.ButtonType
 import kotlinx.html.DIV
 import kotlinx.html.FormEncType
@@ -85,7 +84,7 @@ private fun DIV.formModal(
     modalId: String = "modal",
     title: String = "title",
     formUrl: String = "/",
-	encoding: FormEncType = FormEncType.applicationXWwwFormUrlEncoded,
+    encoding: FormEncType = FormEncType.applicationXWwwFormUrlEncoded,
     method: FormMethod = FormMethod.post,
     modalBody: DIV.() -> Unit = {},
 ) {
@@ -179,30 +178,32 @@ private fun DIV.lineChart(
 }
 
 internal fun HTML.listAccount(account: Account) =
-    accountPageBase("Account information: ${account.accountName}",
-	actions = {
-        formModal(
-            modalId = "newTransactionModal",
-            title = "Add Transactions",
-			encoding = FormEncType.multipartFormData,
-            formUrl = "/accounts/${account.id}/transactions",
-        ) {
-            label("form-label") {
-                htmlFor = "accountName"
-                +"Account Transactions"
+    accountPageBase(
+        "Account information: ${account.accountName}",
+        actions = {
+            formModal(
+                modalId = "newTransactionModal",
+                title = "Add Transactions",
+                encoding = FormEncType.multipartFormData,
+                formUrl = "/accounts/${account.id}/transactions",
+            ) {
+                label("form-label") {
+                    htmlFor = "accountName"
+                    +"Account Transactions"
+                }
+                input(classes = "form-control") {
+                    type = InputType.file
+                    id = "accountTransactions"
+                    name = "accountTransactions"
+                    attributes["aria-describedby"] = "formAccountTransactions"
+                }
+                div("form-text") {
+                    id = "formAccountTransactions"
+                    +"Bank Sabadell xlsx format without headers"
+                }
             }
-            input(classes = "form-control") {
-                type = InputType.file
-                id = "accountTransactions"
-                name = "accountTransactions"
-                attributes["aria-describedby"] = "formAccountTransactions"
-            }
-            div("form-text") {
-                id = "formAccountTransactions"
-                +"Bank Sabadell xlsx format without headers"
-            }
-        }
-    }) {
+        },
+    ) {
         val accountsTransactions = account.accountTransactions.groupBy { "${it.date.month}-${it.date.year}" }
 
         val labels = account.accountTransactions.map { "${it.date.dayOfMonth}-${it.date.month}-${it.date.year}" }
@@ -313,14 +314,14 @@ internal fun HTML.listAccount(account: Account) =
                                                 }
                                             }
                                             td {
-												div{
-													confirmModal(
-														modalId = "confirmDeleteModal",
-														title = "Delete transaction?",
-														formUrl = "/accounts/${account.id}/transactions/${transaction.id}/delete",
-														confirmationMessage = "Transaction ${transaction.concept} will be deleted",
-													)
-												}
+                                                div {
+                                                    confirmModal(
+                                                        modalId = "confirmDeleteModal",
+                                                        title = "Delete transaction?",
+                                                        formUrl = "/accounts/${account.id}/transactions/${transaction.id}/delete",
+                                                        confirmationMessage = "Transaction ${transaction.concept} will be deleted",
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -337,66 +338,64 @@ internal fun HTML.listAccounts(
     accounts: List<Account>,
     balance: BigDecimal,
     categoriesBalance: Map<TransactionCategory, BigDecimal>,
-) =
-    accountPageBase(
-        "Your accounts",
-        actions = {
-			formModal(
-				modalId = "newAccountModal",
-				title = "New Account",
-				formUrl = "/accounts/new",
-			) {
-				label("form-label") {
-					htmlFor = "accountName"
-					+"Account Name"
-				}
-				input(classes = "form-control") {
-					type = InputType.text
-					id = "accountName"
-					name = "accountName"
-					attributes["aria-describedby"] = "formAccountName"
-				}
-				div("form-text") {
-					id = "formAccountName"
-					+"Name of the account to open"
-				}
-			}
-
-            button(classes = "btn btn-dark btn-block") {
-                type = ButtonType.button
-                attributes["data-bs-toggle"] = "modal"
-                attributes["data-bs-target"] = "#newAccountModal"
-                +"Manage Categories"
+) = accountPageBase(
+    "Your accounts",
+    actions = {
+        formModal(
+            modalId = "newAccountModal",
+            title = "New Account",
+            formUrl = "/accounts/new",
+        ) {
+            label("form-label") {
+                htmlFor = "accountName"
+                +"Account Name"
             }
-        },
-    ) {
-
-        div(classes = "row px-4") {
-            ul {
-                categoriesBalance.forEach {
-                    li {
-                        +"${it.key}: ${it.value}"
-                    }
-                }
+            input(classes = "form-control") {
+                type = InputType.text
+                id = "accountName"
+                name = "accountName"
+                attributes["aria-describedby"] = "formAccountName"
             }
-            p { +"Balance: $balance" }
+            div("form-text") {
+                id = "formAccountName"
+                +"Name of the account to open"
+            }
         }
 
-        div(classes = "row px-4") {
-            ul {
-                accounts.forEach {
-                    li {
-                        val link = "/accounts/${it.id}"
+        button(classes = "btn btn-dark btn-block") {
+            type = ButtonType.button
+            attributes["data-bs-toggle"] = "modal"
+            attributes["data-bs-target"] = "#newAccountModal"
+            +"Manage Categories"
+        }
+    },
+) {
+    div(classes = "row px-4") {
+        ul {
+            categoriesBalance.forEach {
+                li {
+                    +"${it.key}: ${it.value}"
+                }
+            }
+        }
+        p { +"Balance: $balance" }
+    }
 
-                        div {
-                            a(link) { +"Account ${it.accountName}" }
-                            +"|"
-                            a("$link/delete") {
-                                +"Delete ${it.accountName}"
-                            }
+    div(classes = "row px-4") {
+        ul {
+            accounts.forEach {
+                li {
+                    val link = "/accounts/${it.id}"
+
+                    div {
+                        a(link) { +"Account ${it.accountName}" }
+                        +"|"
+                        a("$link/delete") {
+                            +"Delete ${it.accountName}"
                         }
                     }
                 }
             }
         }
     }
+}
