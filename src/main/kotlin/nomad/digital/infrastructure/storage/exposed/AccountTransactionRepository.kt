@@ -5,7 +5,6 @@ import nomad.digital.domain.TransactionCategory
 import nomad.digital.infrastructure.storage.exposed.config.DatabaseFactory.dbQuery
 import nomad.digital.infrastructure.storage.exposed.entity.AccountEntity
 import nomad.digital.infrastructure.storage.exposed.entity.AccountTransactionEntity
-import org.jetbrains.exposed.sql.*
 
 suspend fun batchInsertAccountTransactions(
     accountId: Long,

@@ -18,7 +18,8 @@ import kotlinx.coroutines.runBlocking
 import nomad.digital.domain.Account
 import nomad.digital.domain.AccountTransaction
 import nomad.digital.domain.TransactionCategory
-import nomad.digital.infrastructure.readBankTransactions
+import nomad.digital.domain.TransactionDocumentType
+import nomad.digital.infrastructure.importer.SabadellImporter.readBankTransactions
 import nomad.digital.infrastructure.storage.exposed.addAccount
 import nomad.digital.infrastructure.storage.exposed.deleteAccount
 import nomad.digital.infrastructure.storage.exposed.deleteTransactions
@@ -148,7 +149,7 @@ fun Route.accountsRouter() {
             when (part) {
                 is PartData.FormItem -> {}
                 is PartData.FileItem -> {
-                    part.streamProvider().readBankTransactions(accountId)
+                    part.streamProvider().readBankTransactions(accountId, TransactionDocumentType.EXCEL)
                 }
                 else -> {}
             }
