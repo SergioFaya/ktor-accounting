@@ -7,9 +7,7 @@ import io.ktor.server.engine.connector
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import nomad.digital.infrastructure.storage.exposed.config.DatabaseFactory
-import nomad.digital.plugins.configurePostgres
 import nomad.digital.plugins.configureRouting
-import nomad.digital.plugins.configureSerialization
 
 fun main(args: Array<String>) {
     HoconConfigLoader()
@@ -26,7 +24,5 @@ fun main(args: Array<String>) {
 
 fun Application.module() {
     DatabaseFactory.init()
-    configureSerialization()
     configureRouting()
-    configurePostgres()
 }
